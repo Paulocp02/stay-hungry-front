@@ -185,19 +185,29 @@ export default function AdminAnalitics() {
         {/* Gráficos */}
         <div className="panel-grid">
 
-          {/* 1) Altas/Bajas */}
-          <section className="panel-card">
-            <div className="card-header"><h3>Altas y bajas por mes</h3></div>
-            <div className="card-body">
-              {loading ? <div className="skeleton" /> : churn.length ? (
-                <div className="chart-wrapper" style={{ height: 260 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <ComposedChurn data={churn} />
-                  </ResponsiveContainer>
-                </div>
-              ) : <div className="empty">Sin datos en el rango.</div>}
-            </div>
-          </section>
+          {/* 1) Altas y bajas por mes */}
+            <section className="panel-card">
+              <div className="card-header">
+                <h3>Altas y bajas por mes</h3>
+              </div>
+
+              <div className="card-body">
+                {loading ? (
+                  <div className="skeleton" />
+                ) : churn.length ? (
+                  <div className="chart-wrapper" style={{ height: 280 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ComposedChurn data={churn} />
+                    </ResponsiveContainer>
+                  </div>
+
+                ) : (
+                  <div className="empty">Sin datos en el rango.</div>
+                )}
+              </div>
+            </section>
+
+
           {/* 2) Adherencia por entrenador */}
             <section className="panel-card">
               <div className="card-header">
@@ -394,24 +404,59 @@ export default function AdminAnalitics() {
   );
 }
 
-/** Componente gráfico Altas/Bajas */
-function ComposedChurn({ data }) {
-  const rows = (data || []).map(r => ({
-    period: r.mes || r.periodo || r.month || '',
+function ComposedChurn({ data, width, height }) {
+  const rows = (Array.isArray(data) ? data : []).map((r) => ({
+    period: r.mes || r.periodo || r.month || "",
     altas: Number(r.altas || 0),
     bajas: Number(r.bajas || 0),
-    neto: Number(r.neto ?? (r.altas || 0) - (r.bajas || 0)),
+    neto:
+      r.neto != null
+        ? Number(r.neto)
+        : Number(r.altas || 0) - Number(r.bajas || 0),
   }));
+
+  if (!rows.length) return null;
+
   return (
-    <LineChart data={rows}>
+    <LineChart
+      data={rows}
+      width={width}
+      height={height}
+      margin={{ top: 8, right: 16, bottom: 8, left: 0 }}
+    >
       <CartesianGrid strokeDasharray="3 3" />
       <XAxis dataKey="period" />
       <YAxis />
       <Tooltip />
       <Legend />
-      <Line type="monotone" dataKey="altas" name="Altas" dot />
-      <Line type="monotone" dataKey="bajas" name="Bajas" dot />
-      <Line type="monotone" dataKey="neto" name="Neto" dot />
+
+      <Line
+        type="monotone"
+        dataKey="altas"
+        name="Altas"
+        dot={{ r: 3 }}
+        stroke="#4CAF50" // verde
+        strokeWidth={2}
+      />
+      <Line
+        type="monotone"
+        dataKey="bajas"
+        name="Bajas"
+        dot={{ r: 3 }}
+        stroke="#F44336" // rojo
+        strokeWidth={2}
+      />
+      <Line
+        type="monotone"
+        dataKey="neto"
+        name="Neto"
+        dot={{ r: 3 }}
+        stroke="#2196F3" // azul
+        strokeWidth={2}
+      />
     </LineChart>
   );
+
+
+
 }
