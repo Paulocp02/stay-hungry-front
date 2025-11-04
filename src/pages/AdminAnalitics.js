@@ -198,6 +198,113 @@ export default function AdminAnalitics() {
               ) : <div className="empty">Sin datos en el rango.</div>}
             </div>
           </section>
+          {/* 2) Adherencia por entrenador */}
+            <section className="panel-card">
+              <div className="card-header">
+                <h3>Adherencia (30 días) por entrenador</h3>
+              </div>
+              <div className="card-body">
+                {loading ? (
+                  <div className="skeleton" />
+                ) : adherence?.by_trainer?.length ? (
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%" }}>
+                      <thead>
+                        <tr>
+                          <th style={{ textAlign: "left" }}>Entrenador</th>
+                          <th style={{ textAlign: "right" }}>Clientes con sets</th>
+                          <th style={{ textAlign: "right" }}>Total</th>
+                          <th style={{ textAlign: "right" }}>%</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {adherence.by_trainer.map((t) => (
+                          <tr key={t.entrenador || t.nombre}>
+                            <td>{t.entrenador || t.nombre}</td>
+                            <td style={{ textAlign: "right" }}>{t.clientes_con_sets}</td>
+                            <td style={{ textAlign: "right" }}>{t.total_clientes}</td>
+                            <td style={{ textAlign: "right" }}>{t.adherencia_pct}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="empty">Sin datos.</div>
+                )}
+              </div>
+            </section>
+
+            {/* 3) Carga por semana */}
+            <section className="panel-card">
+              <div className="card-header">
+                <h3>Carga por semana (kg·reps)</h3>
+              </div>
+              <div className="card-body">
+                {loading ? (
+                  <div className="skeleton" />
+                ) : volume.length ? (
+                  <div className="chart-wrapper">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={volume}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey={(d) => d.iso_week || d.week} />
+                        <YAxis />
+                        <Tooltip />
+                        <Area dataKey="carga_total" type="monotone" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="empty">Sin datos.</div>
+                )}
+              </div>
+            </section>
+
+            {/* 4) PRs recientes */}
+            <section className="panel-card">
+              <div className="card-header">
+                <h3>PRs / 1RM estimado (Top 10)</h3>
+              </div>
+              <div className="card-body">
+                {loading ? (
+                  <div className="skeleton" />
+                ) : prs.length ? (
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%" }}>
+                      <thead>
+                        <tr>
+                          <th style={{ textAlign: "left" }}>Fecha</th>
+                          <th style={{ textAlign: "left" }}>Ejercicio</th>
+                          <th style={{ textAlign: "right" }}>1RM (kg)</th>
+                          <th style={{ textAlign: "center" }}>Mejor set</th>
+                          <th style={{ textAlign: "left" }}>Usuario</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {prs.slice(0, 10).map((p, i) => (
+                          <tr key={`${p.ejercicio}-${p.date}-${i}`}>
+                            <td>{p.date || p.fecha}</td>
+                            <td>{p.ejercicio}</td>
+                            <td style={{ textAlign: "right" }}>
+                              {p.est_1rm != null ? Number(p.est_1rm).toFixed(2) : "—"}
+                            </td>
+                            <td style={{ textAlign: "center" }}>
+                              {p.max_peso != null && p.max_reps != null
+                                ? `${p.max_peso} × ${p.max_reps}`
+                                : "—"}
+                            </td>
+                            <td>{p.usuario || p.cliente || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="empty">Sin PRs detectados.</div>
+                )}
+              </div>
+            </section>
 
           {/* 5) Clientes por entrenador */}
           <section className="panel-card">
@@ -229,6 +336,58 @@ export default function AdminAnalitics() {
               </div>
             </div>
           </section>
+                {/* 6) Uso de la app */}
+                  <section className="panel-card">
+                    <div className="card-header">
+                      <h3>Uso de la app (páginas y minutos activos)</h3>
+                    </div>
+
+                    <div className="card-body">
+                      {loading ? (
+                        <div className="skeleton" />
+                      ) : usage &&
+                        (usage.sessions > 0 ||
+                          usage.minutes_active > 0 ||
+                          (usage.pages || []).length) ? (
+                        <>
+                          <div className="kpi-grid" style={{ marginBottom: 12 }}>
+                            <div className="kpi">
+                              <div className="kpi-label">Sesiones únicas</div>
+                              <div className="kpi-value">{usage.sessions}</div>
+                            </div>
+                            <div className="kpi">
+                              <div className="kpi-label">Minutos activos</div>
+                              <div className="kpi-value">{usage.minutes_active}</div>
+                            </div>
+                          </div>
+
+                          <div style={{ overflowX: "auto" }}>
+                            <table style={{ width: "100%" }}>
+                              <thead>
+                                <tr>
+                                  <th style={{ textAlign: "left" }}>Ruta</th>
+                                  <th style={{ textAlign: "right" }}>Pageviews</th>
+                                  <th style={{ textAlign: "right" }}>Usuarios</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {(usage.pages || []).map((p, i) => (
+                                  <tr key={`${p.path}-${i}`}>
+                                    <td>{p.path || "(sin ruta)"}</td>
+                                    <td style={{ textAlign: "right" }}>{p.hits ?? 0}</td>
+                                    <td style={{ textAlign: "right" }}>{p.users ?? 0}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="empty">Sin datos de uso en el rango.</div>
+                      )}
+                    </div>
+                  </section>
+
         </div>
       </div>
     </div>
