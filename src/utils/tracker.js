@@ -2,7 +2,7 @@
 // Tracker sin depender del header Authorization (beacon/fetch keepalive)
 // Enviamos userId y rol en el body.
 
-const API = '/api/analytics/track';
+const API = 'https://stay-hungry-api.onrender.com/api/analytics/track';
 const LS_SESSION_KEY = 'shg_session_id';
 
 function getSessionId() {
