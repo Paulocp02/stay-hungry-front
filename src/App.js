@@ -19,7 +19,7 @@ import Tracker from './utils/tracker';
 import './App.css';
 
 // -------- Axios --------
-axios.defaults.baseURL = 'http://localhost:5000';
+axios.defaults.baseURL = 'https://stay-hungry-api.onrender.com';
 
 axios.interceptors.request.use(
   (config) => {
